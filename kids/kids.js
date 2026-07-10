@@ -76,12 +76,27 @@ export async function callKid(req, res, next) {
         throw new AppError("Kid not found", 404);
     }
 
+    const { data: call, error: callError } = await client
+        .from("calls")
+        .insert({
+            user_id,
+            kid_id,
+            timestamp: new Date().toISOString()
+        })
+        .select("*")
+        .single();
+
+    if(callError){
+        throw new AppError("Could not initiate call", 500, callError);
+    }
+
     res.send({
         success: true,
         message: "Call initiated",
         data: {
             user_id,
-            kid
+            kid,
+            call
         }
     });
 }
