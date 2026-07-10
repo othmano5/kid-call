@@ -53,5 +53,35 @@ export async function getAllKids(req, res, next) {
 }
 
 export async function callKid(req, res, next) {
-    
+    const user_id = req.user?.id;
+
+    if(!user_id) {
+        throw new AppError("Invalid or expired token", 403);
+    }
+
+    const kid_id = req.params.id;
+    const client = await createSupabaseClient();
+
+    const { data: kid, error } = await client
+        .from("kids")
+        .select("*")
+        .eq("id", kid_id)
+        .maybeSingle();
+
+    if(error){
+        throw new AppError("Could not getting kid", 500, error);
+    }
+
+    if(!kid){
+        throw new AppError("Kid not found", 404);
+    }
+
+    res.send({
+        success: true,
+        message: "Call initiated",
+        data: {
+            user_id,
+            kid
+        }
+    });
 }
