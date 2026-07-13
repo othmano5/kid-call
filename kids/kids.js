@@ -90,6 +90,18 @@ export async function callKid(req, res, next) {
         throw new AppError("Could not initiate call", 500, callError);
     }
 
+    const { error: callLogError } = await client
+        .from("call_logs")
+        .insert({
+            user_id,
+            kid_id,
+            timestamp: new Date().toISOString()
+        });
+
+    if(callLogError){
+        throw new AppError("Could not log call", 500, callLogError);
+    }
+
     res.send({
         success: true,
         message: "Call initiated",
