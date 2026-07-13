@@ -52,6 +52,32 @@ export async function getAllKids(req, res, next) {
     res.send(data);
 }
 
+export async function confirmKid(req, res, next) {
+    if(req.user.role !== 'admin') {
+        throw new AppError("You are not allowed to access this resource", 403);
+    }
+
+    const client = await createSupabaseClient();
+    const kid_id = req.params.id;
+
+    const { data, error } = await client
+        .from("kids")
+        .update({ is_confirmed: true })
+        .eq("id", kid_id)
+        .select("*")
+        .maybeSingle();
+
+    if(error){
+        throw new AppError("Could not confirm kid", 500, error);
+    }
+
+    if(!data){
+        throw new AppError("Kid not found", 404);
+    }
+
+    res.send(data);
+}
+
 export async function callKid(req, res, next) {
     const user_id = req.user?.id;
 
